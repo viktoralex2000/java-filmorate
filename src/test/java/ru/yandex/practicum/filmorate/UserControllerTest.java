@@ -25,7 +25,6 @@ public class UserControllerTest {
         user.setLogin("validLogin");
         user.setEmail("");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-
         ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
