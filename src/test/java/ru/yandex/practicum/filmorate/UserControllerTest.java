@@ -1,71 +1,77 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
-    private UserController userController;
 
-    @BeforeEach
-    void setUp() {
-        userController = new UserController();
-    }
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     @Test
-    void shouldThrowExceptionWhenEmailIsEmpty() {
+    void shouldReturnBadRequestWhenEmailIsEmpty() {
         User user = new User();
         user.setLogin("validLogin");
-        user.setEmail("");  // пустой email
+        user.setEmail("");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.addUser(user));
+        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void shouldThrowExceptionWhenEmailHasNoAtSign() {
+    void shouldReturnBadRequestWhenEmailHasNoAtSign() {
         User user = new User();
         user.setLogin("validLogin");
-        user.setEmail("invalidemail.com");  // нет @
+        user.setEmail("invalidemail.com");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.addUser(user));
+        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void shouldThrowExceptionWhenLoginIsEmpty() {
+    void shouldReturnBadRequestWhenLoginIsEmpty() {
         User user = new User();
         user.setEmail("valid@email.com");
-        user.setLogin("");  // пустой login
+        user.setLogin("");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.addUser(user));
+        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void shouldThrowExceptionWhenLoginContainsSpace() {
+    void shouldReturnBadRequestWhenLoginContainsSpace() {
         User user = new User();
         user.setEmail("valid@email.com");
-        user.setLogin("invalid login");  // login с пробелом
+        user.setLogin("invalid login");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.addUser(user));
+        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void shouldThrowExceptionWhenBirthdayInFuture() {
+    void shouldReturnBadRequestWhenBirthdayInFuture() {
         User user = new User();
         user.setEmail("valid@email.com");
         user.setLogin("validLogin");
-        user.setBirthday(LocalDate.now().plusDays(1)); // дата в будущем
+        user.setBirthday(LocalDate.now().plusDays(1));
 
-        assertThrows(ValidationException.class, () -> userController.addUser(user));
+        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -73,12 +79,13 @@ public class UserControllerTest {
         User user = new User();
         user.setEmail("valid@email.com");
         user.setLogin("validLogin");
-        user.setName(""); // имя пустое
+        user.setName("");
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        User createdUser = userController.addUser(user);
-
-        assertEquals("validLogin", createdUser.getName(), "Если имя пустое, должно подставляться значение login");
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+        User createdUser = response.getBody();
+        assertNotNull(createdUser);
+        assertEquals("validLogin", createdUser.getName());
     }
 
     @Test
@@ -89,9 +96,11 @@ public class UserControllerTest {
         user.setName("Valid Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        User createdUser = userController.addUser(user);
+        ResponseEntity<User> response = restTemplate.postForEntity("/users", user, User.class);
+        User createdUser = response.getBody();
 
-        assertNotNull(createdUser.getId(), "Id должен быть присвоен при создании пользователя");
+        assertNotNull(createdUser);
+        assertNotNull(createdUser.getId());
         assertEquals("valid@email.com", createdUser.getEmail());
         assertEquals("validLogin", createdUser.getLogin());
         assertEquals("Valid Name", createdUser.getName());
@@ -105,26 +114,34 @@ public class UserControllerTest {
         user.setName("Old Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        User createdUser = userController.addUser(user);
+        ResponseEntity<User> createResponse = restTemplate.postForEntity("/users", user, User.class);
+        User createdUser = createResponse.getBody();
 
+        assertNotNull(createdUser);
         createdUser.setName("New Name");
-        User updatedUser = userController.updateUser(createdUser);
 
-        assertEquals("New Name", updatedUser.getName(), "Имя пользователя должно обновляться");
+        HttpEntity<User> request = new HttpEntity<>(createdUser);
+        ResponseEntity<User> updateResponse = restTemplate.exchange("/users",
+                org.springframework.http.HttpMethod.PUT, request, User.class);
+        User updatedUser = updateResponse.getBody();
+
+        assertNotNull(updatedUser);
+        assertEquals("New Name", updatedUser.getName());
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdatingNonexistentUser() {
+    void shouldReturnNotFoundWhenUpdatingNonexistentUser() {
         User user = new User();
-        user.setId(999); // несуществующий ID
+        user.setId(999);
         user.setEmail("valid@email.com");
         user.setLogin("validLogin");
         user.setName("Some Name");
         user.setBirthday(LocalDate.of(1990, 1, 1));
 
-        assertThrows(ValidationException.class, () -> userController.updateUser(user),
-                "Ошибка при попытке обновления несуществующего пользователя");
+        HttpEntity<User> request = new HttpEntity<>(user);
+        ResponseEntity<String> response = restTemplate.exchange("/users",
+                org.springframework.http.HttpMethod.PUT, request, String.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
-
-
 }

@@ -1,82 +1,91 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class FilmControllerTest {
 
-    private FilmController filmController;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
-    @BeforeEach
-    void setUp() {
-        filmController = new FilmController();
-    }
+    private static final LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, 12, 28);
 
     @Test
-    void shouldThrowExceptionWhenNameIsEmpty() {
+    void shouldReturnBadRequestWhenNameIsEmpty() {
         Film film = new Film();
         film.setName("");
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
 
-        assertThrows(ValidationException.class, () -> filmController.addFilm(film),
-                "Ошибка при пустом названии фильма");
+        ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void shouldThrowExceptionWhenDescriptionTooLong() {
+    void shouldReturnBadRequestWhenDescriptionTooLong() {
         Film film = new Film();
         film.setName("Фильм");
-        film.setDescription("A".repeat(201)); // > 200 символов
+        film.setDescription("A".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
 
-        assertThrows(ValidationException.class, () -> filmController.addFilm(film),
-                "Ошибка при слишком длинном описании фильма");
+        ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void shouldThrowExceptionWhenReleaseDateBeforeCinemaBirthday() {
+    void shouldCreateFilmEvenIfReleaseDateBeforeCinemaBirthday() {
         Film film = new Film();
         film.setName("Фильм");
         film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // до 1895-12-28
+        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // дата до 28.12.1895
         film.setDuration(100);
 
-        assertThrows(ValidationException.class, () -> filmController.addFilm(film),
-                "Ошибка при дате релиза до рождения кино");
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getId(), "ID фильма должен быть присвоен");
+        assertEquals(LocalDate.of(1800, 1, 1), response.getBody().getReleaseDate(), "Дата релиза должна сохраняться");
     }
 
+
     @Test
-    void shouldAcceptReleaseDateOnCinemaBirthday() {
+    void shouldCreateFilmOnCinemaBirthday() {
         Film film = new Film();
         film.setName("Фильм");
         film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28)); // граничное значение
+        film.setReleaseDate(CINEMA_BIRTHDAY);
         film.setDuration(100);
 
-        Film createdFilm = filmController.addFilm(film);
-        assertNotNull(createdFilm.getId(), "Фильм должен успешно создаться на дату 28.12.1895");
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        Film createdFilm = response.getBody();
+
+        assertNotNull(createdFilm);
+        assertEquals(CINEMA_BIRTHDAY, createdFilm.getReleaseDate());
     }
 
     @Test
-    void shouldThrowExceptionWhenDurationIsZeroOrNegative() {
+    void shouldReturnBadRequestWhenDurationIsZeroOrNegative() {
         Film film = new Film();
         film.setName("Фильм");
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(0);
 
-        assertThrows(ValidationException.class, () -> filmController.addFilm(film),
-                "Ошибка при нулевой или отрицательной длительности фильма");
+        ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
@@ -87,9 +96,11 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
-        Film createdFilm = filmController.addFilm(film);
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        Film createdFilm = response.getBody();
 
-        assertNotNull(createdFilm.getId(), "ID должен быть присвоен при создании фильма");
+        assertNotNull(createdFilm);
+        assertNotNull(createdFilm.getId());
         assertEquals("Фильм", createdFilm.getName());
         assertEquals("Описание", createdFilm.getDescription());
     }
@@ -102,25 +113,33 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
-        Film createdFilm = filmController.addFilm(film);
+        ResponseEntity<Film> createResponse = restTemplate.postForEntity("/films", film, Film.class);
+        Film createdFilm = createResponse.getBody();
+        assertNotNull(createdFilm);
 
-        createdFilm.setDescription("Другое описание");
-        Film updatedFilm = filmController.updateFilm(createdFilm);
+        createdFilm.setDescription("Новое описание");
+        HttpEntity<Film> request = new HttpEntity<>(createdFilm);
+        ResponseEntity<Film> updateResponse = restTemplate.exchange("/films",
+                org.springframework.http.HttpMethod.PUT, request, Film.class);
+        Film updatedFilm = updateResponse.getBody();
 
-        assertEquals("Другое описание", updatedFilm.getDescription(),
-                "Описание фильма должно обновляться");
+        assertNotNull(updatedFilm);
+        assertEquals("Новое описание", updatedFilm.getDescription());
     }
 
     @Test
-    void shouldThrowExceptionWhenUpdatingNonexistentFilm() {
+    void shouldReturnNotFoundWhenUpdatingNonexistentFilm() {
         Film film = new Film();
-        film.setId(999); // несуществующий ID
+        film.setId(999);
         film.setName("Фильм");
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
 
-        assertThrows(ValidationException.class, () -> filmController.updateFilm(film),
-                "Ошибка при обновлении несуществующего фильма");
+        HttpEntity<Film> request = new HttpEntity<>(film);
+        ResponseEntity<String> response = restTemplate.exchange("/films",
+                org.springframework.http.HttpMethod.PUT, request, String.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
