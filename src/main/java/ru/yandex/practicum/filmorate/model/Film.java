@@ -20,4 +20,9 @@ public class Film {
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private int duration;
+
+    @AssertTrue(message = "Дата релиза не может быть раньше 28.12.1895")
+    public boolean isReleaseDateValid() {
+        return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
+    }
 }

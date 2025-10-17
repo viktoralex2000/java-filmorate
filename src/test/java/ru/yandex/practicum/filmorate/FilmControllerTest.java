@@ -46,20 +46,18 @@ public class FilmControllerTest {
     }
 
     @Test
-    void shouldCreateFilmEvenIfReleaseDateBeforeCinemaBirthday() {
+    void shouldReturnBadRequestWhenReleaseDateBeforeCinemaBirthday() {
         Film film = new Film();
         film.setName("Фильм");
         film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // дата до 28.12.1895
+        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // дата раньше 28.12.1895
         film.setDuration(100);
 
-        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
+        ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody().getId(), "ID фильма должен быть присвоен");
-        assertEquals(LocalDate.of(1800, 1, 1), response.getBody().getReleaseDate(), "Дата релиза должна сохраняться");
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
+                "При дате релиза до 28.12.1895 должен возвращаться 400 Bad Request");
     }
-
 
     @Test
     void shouldCreateFilmOnCinemaBirthday() {
