@@ -13,10 +13,12 @@ import java.util.stream.Collectors;
 @Service
 public class FilmService {
     final FilmStorage filmStorage;
+    private final UserService userService;
 
     @Autowired
-    FilmService(FilmStorage filmStorage) {
+    FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public Film createFilm(Film film) {
@@ -55,11 +57,13 @@ public class FilmService {
 
     public void addLike(long filmId, long userId) {
         Film film = getFilmById(filmId);
+        userService.getUserById(userId);
         film.getLikes().add(userId);
     }
 
     public void removeLike(long filmId, long userId) {
         Film film = getFilmById(filmId);
+        userService.getUserById(userId);
         film.getLikes().remove(userId);
     }
 
