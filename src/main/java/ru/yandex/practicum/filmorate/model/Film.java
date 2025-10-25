@@ -4,10 +4,11 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 
 @Data
 public class Film {
-    private int id;
+    private long id;
 
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
@@ -25,4 +26,6 @@ public class Film {
     public boolean isReleaseDateValid() {
         return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
+
+    private HashSet<Long> likes = new HashSet<>();
 }

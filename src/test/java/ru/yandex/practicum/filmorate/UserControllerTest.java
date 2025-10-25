@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,21 +25,24 @@ public class UserControllerTest {
     void shouldReturnBadRequestWhenEmailIsEmpty() {
         User user = new User();
         user.setLogin("validLogin");
-        user.setEmail("");
+        user.setEmail(""); // пустой email
         user.setBirthday(LocalDate.of(2000, 1, 1));
-        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity("/users", user, Map.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().get("error").toString().contains("Email не может быть пустым"));
     }
 
     @Test
     void shouldReturnBadRequestWhenEmailHasNoAtSign() {
         User user = new User();
         user.setLogin("validLogin");
-        user.setEmail("invalidemail.com");
+        user.setEmail("invalidemail.com"); // некорректный формат
         user.setBirthday(LocalDate.of(2000, 1, 1));
 
-        ResponseEntity<String> response = restTemplate.postForEntity("/users", user, String.class);
+        ResponseEntity<Map> response = restTemplate.postForEntity("/users", user, Map.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().get("error").toString().contains("Некорректный формат email"));
     }
 
     @Test
@@ -143,4 +148,96 @@ public class UserControllerTest {
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
+
+    @Test
+    void shouldAddFriendSuccessfully() {
+        User user1 = createUser("user1@email.com", "user1");
+        User user2 = createUser("user2@email.com", "user2");
+
+        restTemplate.put("/users/{id}/friends/{friendId}", null, user1.getId(), user2.getId());
+
+        ResponseEntity<User> response1 = restTemplate.getForEntity("/users/{id}", User.class, user1.getId());
+        ResponseEntity<User> response2 = restTemplate.getForEntity("/users/{id}", User.class, user2.getId());
+
+        assertTrue(response1.getBody().getFriends().contains(user2.getId()));
+        assertTrue(response2.getBody().getFriends().contains(user1.getId()));
+    }
+
+    @Test
+    void shouldRemoveFriendSuccessfully() {
+        User user1 = createUser("user1@email.com", "user1");
+        User user2 = createUser("user2@email.com", "user2");
+
+        restTemplate.put("/users/{id}/friends/{friendId}", null, user1.getId(), user2.getId());
+        restTemplate.delete("/users/{id}/friends/{friendId}", user1.getId(), user2.getId());
+
+        ResponseEntity<User> response1 = restTemplate.getForEntity("/users/{id}", User.class, user1.getId());
+        ResponseEntity<User> response2 = restTemplate.getForEntity("/users/{id}", User.class, user2.getId());
+
+        assertFalse(response1.getBody().getFriends().contains(user2.getId()));
+        assertFalse(response2.getBody().getFriends().contains(user1.getId()));
+    }
+
+    @Test
+    void shouldReturnListOfFriends() {
+        User user1 = createUser("user1@email.com", "user1");
+        User user2 = createUser("user2@email.com", "user2");
+        User user3 = createUser("user3@email.com", "user3");
+
+        restTemplate.put("/users/{id}/friends/{friendId}", null, user1.getId(), user2.getId());
+        restTemplate.put("/users/{id}/friends/{friendId}", null, user1.getId(), user3.getId());
+
+        ResponseEntity<User[]> response = restTemplate.getForEntity("/users/{id}/friends", User[].class, user1.getId());
+
+        assertEquals(2, response.getBody().length);
+    }
+
+    @Test
+    void shouldReturnCommonFriends() {
+        User user1 = createUser("user1@email.com", "user1");
+        User user2 = createUser("user2@email.com", "user2");
+        User user3 = createUser("user3@email.com", "user3");
+
+        // все друзья user1 и user2 добавляют user3 в друзья
+        restTemplate.put("/users/{id}/friends/{friendId}", null, user1.getId(), user3.getId());
+        restTemplate.put("/users/{id}/friends/{friendId}", null, user2.getId(), user3.getId());
+
+        ResponseEntity<User[]> response = restTemplate.getForEntity("/users/{id}/friends/common/{otherId}",
+                User[].class, user1.getId(), user2.getId());
+
+        assertEquals(1, response.getBody().length);
+        assertEquals(user3.getId(), response.getBody()[0].getId());
+    }
+
+    // Вспомогательный метод для создания пользователя
+    private User createUser(String email, String login) {
+        User user = new User();
+        user.setEmail(email);
+        user.setLogin(login);
+        user.setBirthday(LocalDate.of(2000, 1, 1));
+        return restTemplate.postForEntity("/users", user, User.class).getBody();
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenAddingFriendToNonexistentUser() {
+        User user = createUser("user@email.com", "user");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/users/{id}/friends/{friendId}",
+                HttpMethod.PUT, null, String.class, 999L, user.getId());
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenRemovingFriendFromNonexistentUser() {
+        User user = createUser("user@email.com", "user");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/users/{id}/friends/{friendId}",
+                HttpMethod.DELETE, null, String.class, 999L, user.getId());
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
 }
