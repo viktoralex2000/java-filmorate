@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "error", errorMessage,
+                "error", e.getMessage(),
                 "status", HttpStatus.BAD_REQUEST.value(),
                 "timestamp", LocalDateTime.now()
         ));

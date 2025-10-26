@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-    final FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
     private final UserService userService;
 
     @Autowired

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
@@ -27,5 +28,5 @@ public class Film {
         return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
     }
 
-    private HashSet<Long> likes = new HashSet<>();
+    private Set<Long> likes = new HashSet<>();
 }
