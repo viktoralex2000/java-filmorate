@@ -66,26 +66,12 @@ public class UserService {
         friend.getFriends().remove(userId);
     }
 
-    /* СТАРАЯ ВЕРСИЯ МЕТОДА
-    public List<User> getFriends(long userId) {
-        User user = getUserById(userId);
-        return user.getFriends().stream()
-                .map(userStorage::getUser)
-                .toList();
-    }*/
     public List<User> getFriends(long userId) {
         return userStorage.getFriends(userId);
     }
 
-
     public List<User> getCommonFriends(long userId, long otherId) {
-        User user = getUserById(userId);
-        User other = getUserById(otherId);
-
-        return user.getFriends().stream()
-                .filter(other.getFriends()::contains)
-                .map(userStorage::getUser)
-                .toList();
+        return userStorage.getCommonFriends(userId, otherId);
     }
-
+    
 }

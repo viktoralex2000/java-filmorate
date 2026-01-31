@@ -72,28 +72,26 @@ public class FilmController {
         return filmService.getMostPopularFilms(count);
     }
 
-    // Получить все жанры
+    // Жанры
     @GetMapping("/genres")
     public List<Genre> getAllGenres() {
         log.info("Запрос списка всех жанров");
         return filmService.getAllGenres();
     }
 
-    // Получить жанр по id
     @GetMapping("/genres/{id}")
     public Genre getGenreById(@PathVariable int id) {
         log.info("Запрос жанра с id={}", id);
         return filmService.getGenreById(id);
     }
 
-    // Получить все рейтинги MPA
+    // Рейтинги
     @GetMapping("/mpa")
     public List<Mpa> getAllMpa() {
         log.info("Запрос списка всех рейтингов MPA");
         return filmService.getAllMpa();
     }
 
-    // Получить рейтинг MPA по id
     @GetMapping("/mpa/{id}")
     public Mpa getMpaById(@PathVariable int id) {
         log.info("Запрос рейтинга MPA с id={}", id);
