@@ -29,4 +29,12 @@ public class Film {
     }
 
     private Set<Long> likes = new HashSet<>();
+
+    // Новое поле для MPA-рейтингa
+    @NotNull(message = "Рейтинг фильма обязателен.")
+    private Integer mpaId;
+
+    // Новое поле для жанров
+    @NotEmpty(message = "Фильм должен иметь хотя бы один жанр.")
+    private Set<Integer> genreIds = new HashSet<>();
 }

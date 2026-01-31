@@ -1,16 +1,36 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final HashMap<Long, Film> films = new HashMap<>();
     private long idCounter = 1;
+    private Map<Integer, Genre> genres = new HashMap<>();
+    private Map<Integer, Mpa> mpa = new HashMap<>();
+
+    @PostConstruct
+    public void init() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(new ClassPathResource("reference-data.json").getInputStream());
+
+        for (JsonNode node : root.get("genres")) {
+            genres.put(node.get("id").asInt(), new Genre(node.get("id").asInt(), node.get("name").asText()));
+        }
+        for (JsonNode node : root.get("mpa")) {
+            mpa.put(node.get("id").asInt(), new Mpa(node.get("id").asInt(), node.get("name").asText()));
+        }
+    }
 
     @Override
     public void addFilm(Film film) {
@@ -37,4 +57,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
     }
+
+    @Override
+    public List<Genre> getAllGenres() {
+        return new ArrayList<>(genres.values());
+    }
+
+    @Override
+    public Genre getGenreById(int id) {
+        return genres.get(id);
+    }
+
+    @Override
+    public List<Mpa> getAllMpa() {
+        return new ArrayList<>(mpa.values());
+    }
+
+    @Override
+    public Mpa getMpaById(int id) {
+        return mpa.get(id);
+    }
+
+
 }
