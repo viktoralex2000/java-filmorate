@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -30,7 +31,7 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
         film.setMpa(1);
-        film.setGenreIds(Set.of(1));
+        film.setGenres(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -44,7 +45,7 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
         film.setMpa(1);
-        film.setGenreIds(Set.of(1));
+        film.setGenres(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -58,7 +59,7 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(1800, 1, 1)); // до 28.12.1895
         film.setDuration(100);
         film.setMpa(1);
-        film.setGenreIds(Set.of(1));
+        film.setGenres(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
@@ -73,7 +74,7 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(0);
         film.setMpa(1);
-        film.setGenreIds(Set.of(1));
+        film.setGenres(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -88,11 +89,11 @@ public class FilmControllerTest {
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
         film.setMpa(1);
-        film.setGenreIds(Set.of(1));
+        film.setGenres(Set.of(1));
 
         HttpEntity<Film> request = new HttpEntity<>(film);
         ResponseEntity<String> response = restTemplate.exchange("/films",
-                org.springframework.http.HttpMethod.PUT, request, String.class);
+                HttpMethod.PUT, request, String.class);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
