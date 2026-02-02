@@ -27,7 +27,7 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getMpaId() == 0) {
             throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
         }
-        if (film.getGenreIds() == null || film.getGenreIds().isEmpty()) {
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
             throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
         }
         String sql = """
@@ -38,7 +38,7 @@ public class FilmDbStorage implements FilmStorage {
                 sql,
                 film.getName(),
                 film.getDescription(),
-                java.sql.Date.valueOf(film.getReleaseDate()),
+                Date.valueOf(film.getReleaseDate()),
                 film.getDuration(),
                 film.getMpaId()
         );
@@ -52,7 +52,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void updateFilm(Film film) {
-        if (film.getGenreIds() == null || film.getGenreIds().isEmpty()) {
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
             throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
         }
         String sql = """
@@ -98,9 +98,9 @@ public class FilmDbStorage implements FilmStorage {
         Film film = films.get(0);
         Set<Integer> genres = getGenreIds(id);
         if (genres != null) {
-            film.setGenreIds(genres);
+            film.setGenres(genres);
         } else {
-            film.setGenreIds(new HashSet<>());
+            film.setGenres(new HashSet<>());
         }
         Set<Long> likes = getLikes(id);
         if (likes != null) {
@@ -119,7 +119,7 @@ public class FilmDbStorage implements FilmStorage {
         );
         for (Film film : films) {
             Set<Integer> genres = getGenreIds(film.getId());
-            film.setGenreIds(genres != null ? genres : new HashSet<>());
+            film.setGenres(genres != null ? genres : new HashSet<>());
             Set<Long> likes = getLikes(film.getId());
             film.setLikes(likes != null ? likes : new HashSet<>());
         }
@@ -159,7 +159,7 @@ public class FilmDbStorage implements FilmStorage {
                 """;
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
         for (Film film : films) {
-            film.setGenreIds(getGenreIds(film.getId()));
+            film.setGenres(getGenreIds(film.getId()));
             film.setLikes(getLikes(film.getId()));
         }
         return films;
@@ -201,7 +201,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void insertGenres(Film film) {
         String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-        for (Integer genreId : film.getGenreIds()) {
+        for (Integer genreId : film.getGenres()) {
             jdbcTemplate.update(sql, film.getId(), genreId);
         }
     }

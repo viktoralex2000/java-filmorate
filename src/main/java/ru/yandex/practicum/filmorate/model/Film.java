@@ -36,5 +36,5 @@ public class Film {
     private int mpaId;
 
     @NotEmpty(message = "Фильм должен иметь хотя бы один жанр.")
-    private Set<Integer> genreIds = new HashSet<>();
+    private Set<Integer> genres = new HashSet<>();
 }
