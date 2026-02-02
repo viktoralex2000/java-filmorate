@@ -9,6 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -23,6 +25,14 @@ public class FilmControllerTest {
 
     private static final LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, 12, 28);
 
+    private Mpa sampleMpa() {
+        return new Mpa(1, "G"); // пример существующего рейтинга MPA
+    }
+
+    private Genre sampleGenre() {
+        return new Genre(1, "Комедия"); // пример существующего жанра
+    }
+
     @Test
     void shouldReturnBadRequestWhenNameIsEmpty() {
         Film film = new Film();
@@ -30,8 +40,8 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
-        film.setMpa(1);
-        film.setGenres(Set.of(1));
+        film.setMpa(sampleMpa());
+        film.setGenres(Set.of(sampleGenre()));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -44,8 +54,8 @@ public class FilmControllerTest {
         film.setDescription("A".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
-        film.setMpa(1);
-        film.setGenres(Set.of(1));
+        film.setMpa(sampleMpa());
+        film.setGenres(Set.of(sampleGenre()));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -58,8 +68,8 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(1800, 1, 1)); // до 28.12.1895
         film.setDuration(100);
-        film.setMpa(1);
-        film.setGenres(Set.of(1));
+        film.setMpa(sampleMpa());
+        film.setGenres(Set.of(sampleGenre()));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
@@ -73,8 +83,8 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(0);
-        film.setMpa(1);
-        film.setGenres(Set.of(1));
+        film.setMpa(sampleMpa());
+        film.setGenres(Set.of(sampleGenre()));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -88,8 +98,8 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
-        film.setMpa(1);
-        film.setGenres(Set.of(1));
+        film.setMpa(sampleMpa());
+        film.setGenres(Set.of(sampleGenre()));
 
         HttpEntity<Film> request = new HttpEntity<>(film);
         ResponseEntity<String> response = restTemplate.exchange("/films",
