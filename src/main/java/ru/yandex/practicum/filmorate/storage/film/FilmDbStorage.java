@@ -165,8 +165,6 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-    //Жанры и рейтинги MPA
-
     @Override
     public List<Genre> getAllGenres() {
         String sql = "SELECT genre_id, genre_name FROM genres ORDER BY genre_id";
