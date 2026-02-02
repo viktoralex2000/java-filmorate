@@ -43,7 +43,7 @@ class FilmDbStorageTest {
         film.setReleaseDate(releaseDate);
         film.setDuration(duration);
         film.setMpa(1);
-        film.setGenreIds(Set.of(1));
+        film.setGenres(Set.of(1));
         return film;
     }
 
@@ -58,7 +58,7 @@ class FilmDbStorageTest {
         assertThat(retrieved.getReleaseDate()).isEqualTo(film1.getReleaseDate());
         assertThat(retrieved.getDuration()).isEqualTo(film1.getDuration());
         assertThat(retrieved.getMpa()).isEqualTo(1);
-        assertThat(retrieved.getGenreIds()).containsExactly(1);
+        assertThat(retrieved.getGenres()).containsExactly(1);
     }
 
     @Test
@@ -68,7 +68,7 @@ class FilmDbStorageTest {
         film1.setName("Updated Name");
         film1.setDescription("Updated Description");
         film1.setDuration(180);
-        film1.setGenreIds(Set.of(2));
+        film1.setGenres(Set.of(2));
 
         filmStorage.updateFilm(film1);
 
@@ -77,7 +77,7 @@ class FilmDbStorageTest {
         assertThat(updated.getName()).isEqualTo("Updated Name");
         assertThat(updated.getDescription()).isEqualTo("Updated Description");
         assertThat(updated.getDuration()).isEqualTo(180);
-        assertThat(updated.getGenreIds()).containsExactly(2);
+        assertThat(updated.getGenres()).containsExactly(2);
     }
 
     @Test
