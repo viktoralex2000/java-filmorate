@@ -17,12 +17,16 @@ public interface FilmStorage {
 
     List<Film> getAllFilms();
 
-    // Методы для жанров
+    void addLike(long filmId, long userId);
+
+    void removeLike(long filmId, long userId);
+
+    List<Film> getMostPopularFilms(int count);
+
     List<Genre> getAllGenres();
 
     Genre getGenreById(int id);
 
-    // Методы для рейтингов MPA
     List<Mpa> getAllMpa();
 
     Mpa getMpaById(int id);

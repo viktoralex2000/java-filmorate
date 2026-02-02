@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +29,8 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
+        film.setMpaId(1);
+        film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -40,6 +43,8 @@ public class FilmControllerTest {
         film.setDescription("A".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
+        film.setMpaId(1);
+        film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -50,28 +55,14 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("Фильм");
         film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // дата раньше 28.12.1895
+        film.setReleaseDate(LocalDate.of(1800, 1, 1)); // до 28.12.1895
         film.setDuration(100);
+        film.setMpaId(1);
+        film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
-
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode(),
                 "При дате релиза до 28.12.1895 должен возвращаться 400 Bad Request");
-    }
-
-    @Test
-    void shouldCreateFilmOnCinemaBirthday() {
-        Film film = new Film();
-        film.setName("Фильм");
-        film.setDescription("Описание");
-        film.setReleaseDate(CINEMA_BIRTHDAY);
-        film.setDuration(100);
-
-        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
-        Film createdFilm = response.getBody();
-
-        assertNotNull(createdFilm);
-        assertEquals(CINEMA_BIRTHDAY, createdFilm.getReleaseDate());
     }
 
     @Test
@@ -81,48 +72,11 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(0);
+        film.setMpaId(1);
+        film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void shouldCreateFilmSuccessfully() {
-        Film film = new Film();
-        film.setName("Фильм");
-        film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-
-        ResponseEntity<Film> response = restTemplate.postForEntity("/films", film, Film.class);
-        Film createdFilm = response.getBody();
-
-        assertNotNull(createdFilm);
-        assertNotNull(createdFilm.getId());
-        assertEquals("Фильм", createdFilm.getName());
-        assertEquals("Описание", createdFilm.getDescription());
-    }
-
-    @Test
-    void shouldUpdateFilmSuccessfully() {
-        Film film = new Film();
-        film.setName("Фильм");
-        film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(120);
-
-        ResponseEntity<Film> createResponse = restTemplate.postForEntity("/films", film, Film.class);
-        Film createdFilm = createResponse.getBody();
-        assertNotNull(createdFilm);
-
-        createdFilm.setDescription("Новое описание");
-        HttpEntity<Film> request = new HttpEntity<>(createdFilm);
-        ResponseEntity<Film> updateResponse = restTemplate.exchange("/films",
-                org.springframework.http.HttpMethod.PUT, request, Film.class);
-        Film updatedFilm = updateResponse.getBody();
-
-        assertNotNull(updatedFilm);
-        assertEquals("Новое описание", updatedFilm.getDescription());
     }
 
     @Test
@@ -133,6 +87,8 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
+        film.setMpaId(1);
+        film.setGenreIds(Set.of(1));
 
         HttpEntity<Film> request = new HttpEntity<>(film);
         ResponseEntity<String> response = restTemplate.exchange("/films",

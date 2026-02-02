@@ -38,12 +38,40 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public void addFriend(long userId, long friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        if (friend == null) {
+            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
+        }
+        user.getFriends().add(friendId);
+    }
+
+    @Override
+    public void removeFriend(long userId, long friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        if (user == null) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        if (friend == null) {
+            throw new NotFoundException("Пользователь с id=" + friendId + " не найден");
+        }
+        user.getFriends().remove(friendId);
+        if (friend.getFriends().contains(userId)) {
+            friend.getFriends().remove(userId);
+        }
+    }
+
+    @Override
     public List<User> getFriends(long userId) {
         User user = users.get(userId);
         if (user == null) {
             throw new NotFoundException("Пользователь с id=" + userId + " не найден");
         }
-
         return user.getFriends().stream()
                 .map(users::get)
                 .filter(friend -> friend.getFriends().contains(userId))
@@ -54,27 +82,22 @@ public class InMemoryUserStorage implements UserStorage {
     public List<User> getCommonFriends(long userId, long otherId) {
         User user = users.get(userId);
         User other = users.get(otherId);
-
         if (user == null || other == null) {
             throw new NotFoundException("Один из пользователей не найден");
         }
-
         Set<Long> userConfirmed = user.getFriends().stream()
                 .filter(id -> {
                     User friend = users.get(id);
                     return friend != null && friend.getFriends().contains(userId);
                 })
                 .collect(Collectors.toSet());
-
         Set<Long> otherConfirmed = other.getFriends().stream()
                 .filter(id -> {
                     User friend = users.get(id);
                     return friend != null && friend.getFriends().contains(otherId);
                 })
                 .collect(Collectors.toSet());
-
         userConfirmed.retainAll(otherConfirmed);
-
         return userConfirmed.stream()
                 .map(users::get)
                 .toList();

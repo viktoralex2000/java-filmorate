@@ -23,7 +23,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void init() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(new ClassPathResource("reference-data.json").getInputStream());
-
         for (JsonNode node : root.get("genres")) {
             genres.put(node.get("id").asInt(), new Genre(node.get("id").asInt(), node.get("name").asText()));
         }
@@ -56,6 +55,27 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getAllFilms() {
         return new ArrayList<>(films.values());
+    }
+
+    @Override
+    public void addLike(long filmId, long userId) {
+        Film film = getFilm(filmId);
+        film.getLikes().add(userId);
+    }
+
+    @Override
+    public void removeLike(long filmId, long userId) {
+        Film film = getFilm(filmId);
+        film.getLikes().remove(userId);
+    }
+
+    @Override
+    public List<Film> getMostPopularFilms(int count) {
+        return films.values().stream()
+                .sorted((f1, f2) ->
+                        Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .limit(count)
+                .toList();
     }
 
     @Override

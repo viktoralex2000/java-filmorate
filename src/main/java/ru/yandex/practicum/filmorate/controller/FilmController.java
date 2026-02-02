@@ -85,7 +85,7 @@ public class FilmController {
         return filmService.getGenreById(id);
     }
 
-    // Рейтинги
+    // рейтинги MPA
     @GetMapping("/mpa")
     public List<Mpa> getAllMpa() {
         log.info("Запрос списка всех рейтингов MPA");

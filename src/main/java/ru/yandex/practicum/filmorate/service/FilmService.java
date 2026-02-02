@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -8,9 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -18,7 +17,7 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
         this.userService = userService;
     }
@@ -55,28 +54,23 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
-    // Лайки
-
     public void addLike(long filmId, long userId) {
-        Film film = getFilmById(filmId);
+        getFilmById(filmId);
         userService.getUserById(userId);
-        film.getLikes().add(userId);
+        filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(long filmId, long userId) {
-        Film film = getFilmById(filmId);
+        getFilmById(filmId);
         userService.getUserById(userId);
-        film.getLikes().remove(userId);
+        filmStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.getAllFilms().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getMostPopularFilms(count);
     }
 
-    // Жанры
+    // Жанры и рейтинг MPA
 
     public List<Genre> getAllGenres() {
         return filmStorage.getAllGenres();
