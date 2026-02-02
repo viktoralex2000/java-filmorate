@@ -196,7 +196,7 @@ public class UserDbStorage implements UserStorage {
                     JOIN friendship_status fs1 ON f1.status_id = fs1.status_id
                     JOIN friendships f1_rev ON f1.friend_id = f1_rev.user_id AND f1.user_id = f1_rev.friend_id
                     JOIN friendship_status fs1_rev ON f1_rev.status_id = fs1_rev.status_id
-                    WHERE f1.user_id = ? AND fs1.status_name = 'confirmed' 
+                    WHERE f1.user_id = ? AND fs1.status_name = 'confirmed'
                       AND fs1_rev.status_name = 'confirmed'
                     INTERSECT
                     SELECT f2.friend_id
@@ -204,7 +204,7 @@ public class UserDbStorage implements UserStorage {
                     JOIN friendship_status fs2 ON f2.status_id = fs2.status_id
                     JOIN friendships f2_rev ON f2.friend_id = f2_rev.user_id AND f2.user_id = f2_rev.friend_id
                     JOIN friendship_status fs2_rev ON f2_rev.status_id = fs2_rev.status_id
-                    WHERE f2.user_id = ? AND fs2.status_name = 'confirmed' 
+                    WHERE f2.user_id = ? AND fs2.status_name = 'confirmed'
                       AND fs2_rev.status_name = 'confirmed'
                 )
                 """;
