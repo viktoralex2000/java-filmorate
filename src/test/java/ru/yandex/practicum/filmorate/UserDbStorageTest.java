@@ -21,29 +21,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
-
     private final UserDbStorage userStorage;
-
     private User user1;
     private User user2;
     private User user3;
 
     @BeforeEach
     void setUp() {
-        userStorage.getAllUsers().forEach(u -> userStorage.removeUser(u.getId()));
-
+        userStorage.getAllUsers()
+                .forEach(u -> userStorage.removeUser(u.getId()));
         user1 = new User();
         user1.setEmail("user1@example.com");
         user1.setLogin("user1");
         user1.setName("User One");
         user1.setBirthday(LocalDate.of(1990, 1, 1));
-
         user2 = new User();
         user2.setEmail("user2@example.com");
         user2.setLogin("user2");
         user2.setName("User Two");
         user2.setBirthday(LocalDate.of(1991, 2, 2));
-
         user3 = new User();
         user3.setEmail("user3@example.com");
         user3.setLogin("user3");
@@ -79,7 +75,8 @@ class UserDbStorageTest {
         long id = user1.getId();
         userStorage.removeUser(id);
         assertThatThrownBy(() -> userStorage.getUser(id))
-                .isInstanceOf(NotFoundException.class);
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("не найден");
     }
 
     @Test
@@ -87,7 +84,9 @@ class UserDbStorageTest {
         userStorage.addUser(user1);
         userStorage.addUser(user2);
         List<User> users = userStorage.getAllUsers();
-        assertThat(users).hasSize(2).extracting(User::getLogin).containsExactlyInAnyOrder("user1", "user2");
+        assertThat(users).hasSize(2)
+                .extracting(User::getLogin)
+                .containsExactlyInAnyOrder("user1", "user2");
     }
 
     @Test
@@ -97,22 +96,17 @@ class UserDbStorageTest {
         userStorage.addUser(user3);
         userStorage.addFriend(user1.getId(), user2.getId());
         userStorage.addFriend(user2.getId(), user1.getId());
-
         userStorage.addFriend(user1.getId(), user3.getId());
         userStorage.addFriend(user3.getId(), user1.getId());
-
         userStorage.addFriend(user2.getId(), user3.getId());
         userStorage.addFriend(user3.getId(), user2.getId());
-
         Set<Long> friendsOfUser1 = userStorage.getUser(user1.getId()).getFriends();
         assertThat(friendsOfUser1)
                 .containsExactlyInAnyOrder(user2.getId(), user3.getId());
-
-        List<User> common = userStorage.getCommonFriends(user1.getId(), user2.getId());
-        assertThat(common)
+        List<User> commonFriends = userStorage.getCommonFriends(user1.getId(), user2.getId());
+        assertThat(commonFriends)
                 .hasSize(1)
                 .extracting(User::getId)
                 .containsExactly(user3.getId());
     }
-
 }
