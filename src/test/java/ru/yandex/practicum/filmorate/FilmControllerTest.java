@@ -29,7 +29,7 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
-        film.setMpaId(1);
+        film.setMpa(1);
         film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
@@ -43,7 +43,7 @@ public class FilmControllerTest {
         film.setDescription("A".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(100);
-        film.setMpaId(1);
+        film.setMpa(1);
         film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
@@ -57,7 +57,7 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(1800, 1, 1)); // до 28.12.1895
         film.setDuration(100);
-        film.setMpaId(1);
+        film.setMpa(1);
         film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
@@ -72,7 +72,7 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(0);
-        film.setMpaId(1);
+        film.setMpa(1);
         film.setGenreIds(Set.of(1));
 
         ResponseEntity<String> response = restTemplate.postForEntity("/films", film, String.class);
@@ -87,7 +87,7 @@ public class FilmControllerTest {
         film.setDescription("Описание");
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
-        film.setMpaId(1);
+        film.setMpa(1);
         film.setGenreIds(Set.of(1));
 
         HttpEntity<Film> request = new HttpEntity<>(film);

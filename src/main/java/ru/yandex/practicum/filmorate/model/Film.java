@@ -33,7 +33,7 @@ public class Film {
     private Set<Long> likes = new HashSet<>();
 
     @NotNull(message = "Рейтинг фильма обязателен.")
-    private int mpaId;
+    private int mpa;
 
     @NotEmpty(message = "Фильм должен иметь хотя бы один жанр.")
     private Set<Integer> genres = new HashSet<>();

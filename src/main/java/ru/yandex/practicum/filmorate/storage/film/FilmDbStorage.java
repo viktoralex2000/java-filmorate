@@ -24,7 +24,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addFilm(Film film) {
-        if (film.getMpaId() == 0) {
+        if (film.getMpa() == 0) {
             throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
         }
         if (film.getGenres() == null || film.getGenres().isEmpty()) {
@@ -40,7 +40,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 Date.valueOf(film.getReleaseDate()),
                 film.getDuration(),
-                film.getMpaId()
+                film.getMpa()
         );
         Long filmId = jdbcTemplate.queryForObject("SELECT MAX(film_id) FROM films", Long.class);
         if (filmId == null) {
@@ -66,7 +66,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 Date.valueOf(film.getReleaseDate()),
                 film.getDuration(),
-                film.getMpaId(),
+                film.getMpa(),
                 film.getId()
         );
         if (updated == 0) {
@@ -232,7 +232,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
-        film.setMpaId(rs.getInt("mpa_rating_id"));
+        film.setMpa(rs.getInt("mpa_rating_id"));
         return film;
     }
 
