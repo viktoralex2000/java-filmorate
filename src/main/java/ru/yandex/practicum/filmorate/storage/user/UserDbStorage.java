@@ -174,13 +174,8 @@ public class UserDbStorage implements UserStorage {
         String sql = """
                 SELECT u.*
                 FROM users u
-                JOIN friendships f1 ON u.user_id = f1.friend_id
-                JOIN friendships f2 ON u.user_id = f2.user_id AND f2.friend_id = f1.user_id
-                JOIN friendship_status fs1 ON f1.status_id = fs1.status_id
-                JOIN friendship_status fs2 ON f2.status_id = fs2.status_id
-                WHERE f1.user_id = ?
-                  AND fs1.status_name = 'confirmed'
-                  AND fs2.status_name = 'confirmed'
+                JOIN friendships f ON u.user_id = f.friend_id
+                WHERE f.user_id = ?
                 """;
         return jdbcTemplate.query(sql, userRowMapper, userId);
     }
@@ -193,19 +188,12 @@ public class UserDbStorage implements UserStorage {
                 WHERE u.user_id IN (
                     SELECT f1.friend_id
                     FROM friendships f1
-                    JOIN friendship_status fs1 ON f1.status_id = fs1.status_id
-                    JOIN friendships f1_rev ON f1.friend_id = f1_rev.user_id AND f1.user_id = f1_rev.friend_id
-                    JOIN friendship_status fs1_rev ON f1_rev.status_id = fs1_rev.status_id
-                    WHERE f1.user_id = ? AND fs1.status_name = 'confirmed'
-                      AND fs1_rev.status_name = 'confirmed'
-                    INTERSECT
+                    WHERE f1.user_id = ?
+                )
+                AND u.user_id IN (
                     SELECT f2.friend_id
                     FROM friendships f2
-                    JOIN friendship_status fs2 ON f2.status_id = fs2.status_id
-                    JOIN friendships f2_rev ON f2.friend_id = f2_rev.user_id AND f2.user_id = f2_rev.friend_id
-                    JOIN friendship_status fs2_rev ON f2_rev.status_id = fs2_rev.status_id
-                    WHERE f2.user_id = ? AND fs2.status_name = 'confirmed'
-                      AND fs2_rev.status_name = 'confirmed'
+                    WHERE f2.user_id = ?
                 )
                 """;
         return jdbcTemplate.query(sql, userRowMapper, userId, otherId);
