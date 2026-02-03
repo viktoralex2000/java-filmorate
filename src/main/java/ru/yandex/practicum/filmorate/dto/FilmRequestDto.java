@@ -30,7 +30,6 @@ public class FilmRequestDto {
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private int duration;
 
-    //@NotNull
     private Mpa mpa;
 
     private Set<Genre> genres;

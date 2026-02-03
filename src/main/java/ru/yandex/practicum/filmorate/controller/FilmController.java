@@ -22,23 +22,11 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    /*@PostMapping
-    public Film createFilm(@Valid @RequestBody Film film) {
-        log.info("Добавлен фильм: {}", film);
-        return filmService.createFilm(film);
-    }*/
-
     @PostMapping
     public FilmResponseDto createFilm(@Valid @RequestBody FilmRequestDto request) {
         log.info("Добавление фильма: {}", request);
         return filmService.createFilm(request);
     }
-
-    /*@PutMapping
-    public Film updateFilm(@Valid @RequestBody Film film) {
-        log.info("Обновление фильма: {}", film);
-        return filmService.updateFilm(film);
-    }*/
 
     @PutMapping
     public FilmResponseDto updateFilm(@Valid @RequestBody FilmRequestDto request) {
@@ -83,35 +71,5 @@ public class FilmController {
         log.info("Запрос популярных фильмов (count={})", count);
         return filmService.getMostPopularFilms(count);
     }
-
-    /*
-
-    // Жанры
-    @GetMapping("/genres")
-    public List<Genre> getAllGenres() {
-        log.info("Запрос списка всех жанров");
-        return filmService.getAllGenres();
-    }
-
-    @GetMapping("/genres/{id}")
-    public Genre getGenreById(@PathVariable long id) {
-        log.info("Запрос жанра с id={}", id);
-        return filmService.getGenreById(id);
-    }
-
-    // рейтинги MPA
-    @GetMapping("/mpa")
-    public List<Mpa> getAllMpa() {
-        log.info("Запрос списка всех рейтингов MPA");
-        return filmService.getAllMpa();
-    }
-
-    @GetMapping("/mpa/{id}")
-    public Mpa getMpaById(@PathVariable long id) {
-        log.info("Запрос рейтинга MPA с id={}", id);
-        return filmService.getMpaById(id);
-    }
-
-     */
 
 }
