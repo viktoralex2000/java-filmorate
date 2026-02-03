@@ -86,6 +86,8 @@ public class FilmController {
         return filmService.getMostPopularFilms(count);
     }
 
+    /*
+
     // Жанры
     @GetMapping("/genres")
     public List<Genre> getAllGenres() {
@@ -112,5 +114,6 @@ public class FilmController {
         return filmService.getMpaById(id);
     }
 
+     */
 
 }
