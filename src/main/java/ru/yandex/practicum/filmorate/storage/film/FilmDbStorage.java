@@ -22,12 +22,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addFilm(Film film) {
-        if (film.getMpa() == null) {
-            throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
-        }
-        if (film.getGenres() == null || film.getGenres().isEmpty()) {
-            throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
-        }
+        //if (film.getMpa() == null) {
+        //    throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
+        //}
+        //if (film.getGenres() == null || film.getGenres().isEmpty()) {
+        //    throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
+        //}
 
         String sql = """
                 INSERT INTO films (film_name, description, release_date, duration, mpa_rating_id)
@@ -53,9 +53,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void updateFilm(Film film) {
-        if (film.getGenres() == null || film.getGenres().isEmpty()) {
-            throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
-        }
+        //if (film.getGenres() == null || film.getGenres().isEmpty()) {
+        //    throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
+        //}
 
         String sql = """
                 UPDATE films
