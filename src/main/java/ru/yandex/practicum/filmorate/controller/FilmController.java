@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.dto.FilmRequestDto;
+import ru.yandex.practicum.filmorate.dto.FilmResponseDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -22,16 +24,28 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @PostMapping
+    /*@PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Добавлен фильм: {}", film);
         return filmService.createFilm(film);
+    }*/
+
+    @PostMapping
+    public FilmResponseDto createFilm(@Valid @RequestBody FilmRequestDto request) {
+        log.info("Добавление фильма: {}", request);
+        return filmService.createFilm(request);
     }
 
-    @PutMapping
+    /*@PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Обновление фильма: {}", film);
         return filmService.updateFilm(film);
+    }*/
+
+    @PutMapping
+    public FilmResponseDto updateFilm(@Valid @RequestBody FilmRequestDto request) {
+        log.info("Обновление фильма: {}", request);
+        return filmService.updateFilm(request);
     }
 
     @DeleteMapping("/{id}")

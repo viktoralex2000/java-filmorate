@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -12,29 +10,30 @@ import java.util.Set;
 public class Film {
     private long id;
 
-    @NotBlank(message = "Название фильма не может быть пустым.")
+    //@NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
 
-    @Size(max = 200, message = "Описание не может превышать 200 символов.")
+    //@Size(max = 200, message = "Описание не может превышать 200 символов.")
     private String description;
 
-    @NotNull(message = "Дата релиза обязательна.")
+    //@NotNull(message = "Дата релиза обязательна.")
     private LocalDate releaseDate;
 
-    @Positive(message = "Продолжительность фильма должна быть положительным числом.")
+    //@Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private int duration;
 
-    @JsonIgnore
-    @AssertTrue(message = "Дата релиза не может быть раньше 28.12.1895")
-    public boolean isReleaseDateValid() {
-        return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
-    }
+    //@JsonIgnore
+    //@AssertTrue(message = "Дата релиза не может быть раньше 28.12.1895")
+    //public boolean isReleaseDateValid() {
+    //    return releaseDate == null ||
+    //            !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
+    //}
 
     private Set<Long> likes = new HashSet<>();
 
-    @NotNull(message = "Рейтинг фильма обязателен.")
+    //@NotNull(message = "Рейтинг фильма обязателен.")
     private Mpa mpa;
 
-    @NotEmpty(message = "Фильм должен иметь хотя бы один жанр.")
+    //@NotEmpty(message = "Фильм должен иметь хотя бы один жанр.")
     private Set<Genre> genres = new HashSet<>();
 }

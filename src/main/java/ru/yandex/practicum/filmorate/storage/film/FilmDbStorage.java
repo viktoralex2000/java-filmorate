@@ -240,4 +240,5 @@ public class FilmDbStorage implements FilmStorage {
 
     private final RowMapper<Mpa> mpaRowMapper = (rs, rowNum) ->
             new Mpa(rs.getInt("rating_id"), rs.getString("rating_name"));
+
 }
