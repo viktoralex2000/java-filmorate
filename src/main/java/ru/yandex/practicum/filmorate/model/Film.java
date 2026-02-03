@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -35,5 +36,5 @@ public class Film {
     private Mpa mpa;
 
     //@NotEmpty(message = "Фильм должен иметь хотя бы один жанр.")
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
 }

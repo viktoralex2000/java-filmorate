@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -121,7 +122,7 @@ public class FilmService {
             Mpa mpa = getMpaById(dto.getMpa().getId());
             film.setMpa(mpa);
         }
-        Set<Genre> genres = new HashSet<>();
+        Set<Genre> genres = new LinkedHashSet<>();
         if (dto.getGenres() != null) {
             for (Genre g : dto.getGenres()) {
                 genres.add(getGenreById(g.getId()));
