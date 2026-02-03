@@ -113,6 +113,7 @@ public class FilmService {
 
     private Film mapToFilm(FilmRequestDto dto) {
         Film film = new Film();
+        film.setId(dto.getId());
         film.setName(dto.getName());
         film.setDescription(dto.getDescription());
         film.setReleaseDate(dto.getReleaseDate());
