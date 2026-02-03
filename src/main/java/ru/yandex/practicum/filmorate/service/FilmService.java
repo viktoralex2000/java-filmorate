@@ -117,19 +117,20 @@ public class FilmService {
         film.setDescription(dto.getDescription());
         film.setReleaseDate(dto.getReleaseDate());
         film.setDuration(dto.getDuration());
-        if (dto.getMpaId() != null) {
-            Mpa mpa = getMpaById(dto.getMpaId());
+        if (dto.getMpa() != null) {
+            Mpa mpa = getMpaById(dto.getMpa().getId());
             film.setMpa(mpa);
         }
         Set<Genre> genres = new HashSet<>();
-        if (dto.getGenreIds() != null) {
-            for (Integer genreId : dto.getGenreIds()) {
-                genres.add(getGenreById(genreId));
+        if (dto.getGenres() != null) {
+            for (Genre g : dto.getGenres()) {
+                genres.add(getGenreById(g.getId()));
             }
         }
         film.setGenres(genres);
         return film;
     }
+
 
     private FilmResponseDto mapToResponseDto(Film film) {
         FilmResponseDto dto = new FilmResponseDto();
