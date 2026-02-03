@@ -28,23 +28,23 @@
   "mpa": [
     {
       "id": 1,
-      "name": "0+"
+      "name": "G"
     },
     {
       "id": 2,
-      "name": "6+"
+      "name": "PG"
     },
     {
       "id": 3,
-      "name": "12+"
+      "name": "PG-13"
     },
     {
       "id": 4,
-      "name": "16+"
+      "name": "R"
     },
     {
       "id": 5,
-      "name": "18+"
+      "name": "NC-17"
     }
   ]
 }
