@@ -27,25 +27,12 @@ public class FilmService {
         this.userService = userService;
     }
 
-    /*public Film createFilm(Film film) {
-        filmStorage.addFilm(film);
-        return film;
-    }*/
-
     public FilmResponseDto createFilm(FilmRequestDto request) {
         Film film = mapToFilm(request);
         validateFilm(film);
         filmStorage.addFilm(film);
         return mapToResponseDto(film);
     }
-
-    /*public Film updateFilm(Film film) {
-        if (filmStorage.getFilm(film.getId()) == null) {
-            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
-        }
-        filmStorage.updateFilm(film);
-        return film;
-    }*/
 
     public FilmResponseDto updateFilm(FilmRequestDto request) {
         Film film = mapToFilm(request);
@@ -146,16 +133,6 @@ public class FilmService {
     }
 
     private void validateFilm(Film film) {
-        /*if (film.getMpa() == null || film.getMpa().getId() == 0) {
-            throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
-        }
-        getMpaById(film.getMpa().getId());
-        if (film.getGenres() == null || film.getGenres().isEmpty()) {
-            throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
-        }
-        for (Genre genre : film.getGenres()) {
-            getGenreById(genre.getId());
-        }*/
         if (film.getDuration() <= 0) {
             throw new IllegalArgumentException("Продолжительность фильма должна быть положительным числом.");
         }

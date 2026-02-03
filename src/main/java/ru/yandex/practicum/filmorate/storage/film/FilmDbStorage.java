@@ -22,13 +22,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addFilm(Film film) {
-        //if (film.getMpa() == null) {
-        //    throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
-        //}
-        //if (film.getGenres() == null || film.getGenres().isEmpty()) {
-        //    throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
-        //}
-
         String sql = """
                 INSERT INTO films (film_name, description, release_date, duration, mpa_rating_id)
                 VALUES (?, ?, ?, ?, ?)
@@ -43,20 +36,23 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId()
         );
 
+        // Получаем ID нового фильма
         Long filmId = jdbcTemplate.queryForObject("SELECT MAX(film_id) FROM films", Long.class);
         if (filmId == null) {
             throw new IllegalStateException("Не удалось получить ID добавленного фильма.");
         }
         film.setId(filmId);
+
+        // Сохраняем жанры
         insertGenres(film);
+
+        // Подтягиваем полный MPA и жанры из базы, чтобы объект был "полным"
+        film.setMpa(getMpaById(film.getMpa().getId()));
+        film.setGenres(getGenresByFilmId(film.getId()));
     }
 
     @Override
     public void updateFilm(Film film) {
-        //if (film.getGenres() == null || film.getGenres().isEmpty()) {
-        //    throw new IllegalArgumentException("Фильм должен иметь хотя бы один жанр.");
-        //}
-
         String sql = """
                 UPDATE films
                 SET film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?
@@ -80,7 +76,12 @@ public class FilmDbStorage implements FilmStorage {
         // Обновляем жанры
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         insertGenres(film);
+
+        // Подтягиваем полный MPA и жанры
+        film.setMpa(getMpaById(film.getMpa().getId()));
+        film.setGenres(getGenresByFilmId(film.getId()));
     }
+
 
     @Override
     public void removeFilm(long id) {
@@ -193,11 +194,6 @@ public class FilmDbStorage implements FilmStorage {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("MPA рейтинг с id=" + id + " не найден"));
     }
-
-    //private Mpa getMpaByIdFromDb(int id) {
-    //    return getMpaById(id);
-    //}
-
     // Вспомогательные методы
 
     private void insertGenres(Film film) {
