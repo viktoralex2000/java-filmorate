@@ -99,7 +99,7 @@ public class FilmService {
         return filmStorage.getAllGenres();
     }
 
-    public Genre getGenreById(int id) {
+    public Genre getGenreById(long id) {
         return filmStorage.getGenreById(id);
     }
 
@@ -107,7 +107,7 @@ public class FilmService {
         return filmStorage.getAllMpa();
     }
 
-    public Mpa getMpaById(int id) {
+    public Mpa getMpaById(long id) {
         return filmStorage.getMpaById(id);
     }
 

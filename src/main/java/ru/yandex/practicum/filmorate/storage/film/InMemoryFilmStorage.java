@@ -84,7 +84,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Genre getGenreById(int id) {
+    public Genre getGenreById(long id) {
         return genres.get(id);
     }
 
@@ -94,7 +94,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Mpa getMpaById(int id) {
+    public Mpa getMpaById(long id) {
         return mpa.get(id);
     }
 

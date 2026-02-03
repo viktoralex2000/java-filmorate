@@ -106,7 +106,7 @@ public class FilmDbStorage implements FilmStorage {
         Film film = films.get(0);
         film.setGenres(getGenresByFilmId(id));
         film.setLikes(getLikes(id));
-        film.setMpa(getMpaByIdFromDb(film.getMpa().getId()));
+        film.setMpa(getMpaById(film.getMpa().getId()));
 
         return film;
     }
@@ -117,7 +117,7 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : films) {
             film.setGenres(getGenresByFilmId(film.getId()));
             film.setLikes(getLikes(film.getId()));
-            film.setMpa(getMpaByIdFromDb(film.getMpa().getId()));
+            film.setMpa(getMpaById(film.getMpa().getId()));
         }
         return films;
     }
@@ -157,7 +157,7 @@ public class FilmDbStorage implements FilmStorage {
         for (Film film : films) {
             film.setGenres(getGenresByFilmId(film.getId()));
             film.setLikes(getLikes(film.getId()));
-            film.setMpa(getMpaByIdFromDb(film.getMpa().getId()));
+            film.setMpa(getMpaById(film.getMpa().getId()));
         }
         return films;
     }
@@ -170,7 +170,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Genre getGenreById(int id) {
+    public Genre getGenreById(long id) {
         String sql = "SELECT genre_id, genre_name FROM genres WHERE genre_id = ?";
         return jdbcTemplate.query(sql, genreRowMapper, id)
                 .stream()
@@ -186,13 +186,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Mpa getMpaById(int id) {
+    public Mpa getMpaById(long id) {
         String sql = "SELECT rating_id, rating_name FROM mpa_ratings WHERE rating_id = ?";
         return jdbcTemplate.query(sql, mpaRowMapper, id)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("MPA рейтинг с id=" + id + " не найден"));
     }
+
+    //private Mpa getMpaByIdFromDb(int id) {
+    //    return getMpaById(id);
+    //}
 
     // Вспомогательные методы
 
@@ -217,10 +221,6 @@ public class FilmDbStorage implements FilmStorage {
     private Set<Long> getLikes(long filmId) {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, filmId));
-    }
-
-    private Mpa getMpaByIdFromDb(int id) {
-        return getMpaById(id);
     }
 
     private final RowMapper<Film> filmRowMapper = (rs, rowNum) -> {

@@ -94,7 +94,7 @@ public class FilmController {
     }
 
     @GetMapping("/genres/{id}")
-    public Genre getGenreById(@PathVariable int id) {
+    public Genre getGenreById(@PathVariable long id) {
         log.info("Запрос жанра с id={}", id);
         return filmService.getGenreById(id);
     }
@@ -107,7 +107,7 @@ public class FilmController {
     }
 
     @GetMapping("/mpa/{id}")
-    public Mpa getMpaById(@PathVariable int id) {
+    public Mpa getMpaById(@PathVariable long id) {
         log.info("Запрос рейтинга MPA с id={}", id);
         return filmService.getMpaById(id);
     }
