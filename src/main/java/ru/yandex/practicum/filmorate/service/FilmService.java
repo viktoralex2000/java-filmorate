@@ -146,7 +146,7 @@ public class FilmService {
     }
 
     private void validateFilm(Film film) {
-        if (film.getMpa() == null || film.getMpa().getId() == 0) {
+        /*if (film.getMpa() == null || film.getMpa().getId() == 0) {
             throw new IllegalArgumentException("У фильма должен быть указан рейтинг MPA.");
         }
         getMpaById(film.getMpa().getId());
@@ -155,7 +155,7 @@ public class FilmService {
         }
         for (Genre genre : film.getGenres()) {
             getGenreById(genre.getId());
-        }
+        }*/
         if (film.getDuration() <= 0) {
             throw new IllegalArgumentException("Продолжительность фильма должна быть положительным числом.");
         }
