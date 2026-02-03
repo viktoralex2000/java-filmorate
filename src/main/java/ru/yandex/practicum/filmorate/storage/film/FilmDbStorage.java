@@ -230,7 +230,6 @@ public class FilmDbStorage implements FilmStorage {
         film.setDescription(rs.getString("description"));
         film.setReleaseDate(rs.getDate("release_date").toLocalDate());
         film.setDuration(rs.getInt("duration"));
-        // временно создаём MPA с id, имя потом подтянем из БД
         film.setMpa(new Mpa(rs.getInt("mpa_rating_id"), ""));
         return film;
     };
