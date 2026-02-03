@@ -171,6 +171,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(long userId) {
+        getUser(userId);
         String sql = """
                 SELECT u.*
                 FROM users u
