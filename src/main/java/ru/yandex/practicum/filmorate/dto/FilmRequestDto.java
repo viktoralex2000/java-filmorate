@@ -10,6 +10,7 @@ import java.util.Set;
 
 @Data
 public class FilmRequestDto {
+    private long id;
 
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
