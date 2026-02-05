@@ -5,6 +5,8 @@ import ru.yandex.practicum.filmorate.dto.FilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.FilmResponseDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.LinkedHashSet;
+
 @Component
 public class FilmMapper {
     public Film mapToFilm(FilmRequestDto dto) {
@@ -15,7 +17,7 @@ public class FilmMapper {
         film.setReleaseDate(dto.getReleaseDate());
         film.setDuration(dto.getDuration());
         film.setMpa(dto.getMpa());
-        film.setGenres(dto.getGenres());
+        film.setGenres(dto.getGenres() != null ? new LinkedHashSet<>(dto.getGenres()) : new LinkedHashSet<>());
         return film;
     }
 
