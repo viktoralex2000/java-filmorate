@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.List;
+import java.util.*;
 
 @Component("userDbStorage")
 @RequiredArgsConstructor
@@ -97,20 +97,35 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAllUsers() {
-        List<User> users = jdbcTemplate.query("SELECT * FROM users", (rs, rowNum) -> userRowMapper.mapRowToUser(rs));
-
+        List<User> users = jdbcTemplate.query(
+                "SELECT * FROM users",
+                (rs, rowNum) -> userRowMapper.mapRowToUser(rs)
+        );
+        if (users.isEmpty()) {
+            return users;
+        }
+        List<Long> userIds = users.stream()
+                .map(User::getId)
+                .toList();
         String friendsSql = """
-                SELECT f.friend_id
-                FROM friendships f
-                JOIN friendship_status fs ON f.status_id = fs.status_id
-                JOIN friendships f_rev ON f.friend_id = f_rev.user_id AND f.user_id = f_rev.friend_id
-                JOIN friendship_status fs_rev ON f_rev.status_id = fs_rev.status_id
-                WHERE f.user_id = ? AND fs.status_name = 'confirmed' AND fs_rev.status_name = 'confirmed'
-                """;
+                SELECT user_id, friend_id
+                FROM friendships
+                WHERE user_id IN (%s)
+                """.formatted(userIds.stream()
+                .map(String::valueOf)
+                .collect(java.util.stream.Collectors.joining(",")));
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(friendsSql);
+        Map<Long, Set<Long>> friendsMap = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            long userId = ((Number) row.get("user_id")).longValue();
+            long friendId = ((Number) row.get("friend_id")).longValue();
+            friendsMap.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
+        }
         for (User user : users) {
-            List<Long> friendIds = jdbcTemplate.queryForList(friendsSql, Long.class, user.getId());
             user.getFriends().clear();
-            user.getFriends().addAll(friendIds);
+            user.getFriends().addAll(
+                    friendsMap.getOrDefault(user.getId(), new HashSet<>())
+            );
         }
         return users;
     }
