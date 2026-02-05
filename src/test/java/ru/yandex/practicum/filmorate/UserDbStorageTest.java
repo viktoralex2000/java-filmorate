@@ -50,8 +50,7 @@ class UserDbStorageTest {
 
     @AfterEach
     void tearDown() {
-        userStorage.getAllUsers()
-                .forEach(u -> userStorage.removeUser(u.getId()));
+        userStorage.clear();
     }
 
     @Test

@@ -23,5 +23,6 @@ public interface UserStorage {
 
     List<User> getAllUsers();
 
+    void clear();
 
 }

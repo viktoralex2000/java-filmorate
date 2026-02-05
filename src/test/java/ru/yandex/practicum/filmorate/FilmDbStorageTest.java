@@ -34,10 +34,8 @@ class FilmDbStorageTest {
 
     @BeforeEach
     void setUp() {
-        filmStorage.getAllFilms()
-                .forEach(f -> filmStorage.removeFilm(f.getId()));
-        userStorage.getAllUsers()
-                .forEach(f -> userStorage.removeUser(f.getId()));
+        filmStorage.clear();
+        userStorage.clear();
         film1 = createTestFilm(
                 "Film One",
                 "Description One",

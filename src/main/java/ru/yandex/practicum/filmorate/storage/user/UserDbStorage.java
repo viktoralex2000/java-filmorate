@@ -213,6 +213,11 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, (rs, rowNum) -> userRowMapper.mapRowToUser(rs), userId, otherId);
     }
 
+    public void clear() {
+        jdbcTemplate.update("DELETE FROM friendships");
+        jdbcTemplate.update("DELETE FROM users");
+    }
+
     private void setDisplayNameIfEmpty(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
