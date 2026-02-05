@@ -25,6 +25,16 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public long addFilm(Film film) {
+        if (film.getMpa() == null || getMpaById(film.getMpa().getId()) == null) {
+            throw new NotFoundException("MPA с id=" + (film.getMpa() != null ? film.getMpa().getId() : "null") + " не найден");
+        }
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                if (getGenreById(genre.getId()) == null) {
+                    throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
+                }
+            }
+        }
         String sql = """
                 INSERT INTO films (film_name, description, release_date, duration, mpa_rating_id)
                 VALUES (?, ?, ?, ?, ?)
