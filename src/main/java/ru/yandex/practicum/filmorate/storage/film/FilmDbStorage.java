@@ -1,9 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.mapper.GenreRowMapper;
+import ru.yandex.practicum.filmorate.mapper.MpaRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -12,21 +15,20 @@ import java.sql.Date;
 import java.util.*;
 
 @Component("filmDbStorage")
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final FilmRowMapper filmRowMapper;
+    private final GenreRowMapper genreRowMapper;
+    private final MpaRowMapper mpaRowMapper;
 
     @Override
-    public void addFilm(Film film) {
+    public long addFilm(Film film) {
         String sql = """
                 INSERT INTO films (film_name, description, release_date, duration, mpa_rating_id)
                 VALUES (?, ?, ?, ?, ?)
                 """;
-
         jdbcTemplate.update(
                 sql,
                 film.getName(),
@@ -35,20 +37,15 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa().getId()
         );
-
-        // Получаем ID нового фильма
         Long filmId = jdbcTemplate.queryForObject("SELECT MAX(film_id) FROM films", Long.class);
         if (filmId == null) {
             throw new IllegalStateException("Не удалось получить ID добавленного фильма.");
         }
         film.setId(filmId);
-
-        // Сохраняем жанры
         insertGenres(film);
-
-        // Подтягиваем полный MPA и жанры из базы, чтобы объект был "полным"
         film.setMpa(getMpaById(film.getMpa().getId()));
         film.setGenres(getGenresByFilmId(film.getId()));
+        return filmId;
     }
 
     @Override
@@ -58,7 +55,6 @@ public class FilmDbStorage implements FilmStorage {
                 SET film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?
                 WHERE film_id = ?
                 """;
-
         int updated = jdbcTemplate.update(
                 sql,
                 film.getName(),
@@ -68,16 +64,11 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId()
         );
-
         if (updated == 0) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
-
-        // Обновляем жанры
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         insertGenres(film);
-
-        // Подтягиваем полный MPA и жанры
         film.setMpa(getMpaById(film.getMpa().getId()));
         film.setGenres(getGenresByFilmId(film.getId()));
     }
@@ -90,7 +81,6 @@ public class FilmDbStorage implements FilmStorage {
         if (count == null || count == 0) {
             throw new NotFoundException("Фильм с id=" + id + " не найден");
         }
-
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", id);
         jdbcTemplate.update("DELETE FROM likes WHERE film_id = ?", id);
         jdbcTemplate.update("DELETE FROM films WHERE film_id = ?", id);
@@ -103,12 +93,10 @@ public class FilmDbStorage implements FilmStorage {
         if (films.isEmpty()) {
             throw new NotFoundException("Фильм с id=" + id + " не найден");
         }
-
         Film film = films.get(0);
         film.setGenres(getGenresByFilmId(id));
         film.setLikes(getLikes(id));
         film.setMpa(getMpaById(film.getMpa().getId()));
-
         return film;
     }
 
@@ -194,7 +182,8 @@ public class FilmDbStorage implements FilmStorage {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("MPA рейтинг с id=" + id + " не найден"));
     }
-    // Вспомогательные методы
+
+// Вспомогательные методы
 
     private void insertGenres(Film film) {
         String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
@@ -218,22 +207,5 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT user_id FROM likes WHERE film_id = ?";
         return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, filmId));
     }
-
-    private final RowMapper<Film> filmRowMapper = (rs, rowNum) -> {
-        Film film = new Film();
-        film.setId(rs.getLong("film_id"));
-        film.setName(rs.getString("film_name"));
-        film.setDescription(rs.getString("description"));
-        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-        film.setDuration(rs.getInt("duration"));
-        film.setMpa(new Mpa(rs.getInt("mpa_rating_id"), ""));
-        return film;
-    };
-
-    private final RowMapper<Genre> genreRowMapper = (rs, rowNum) ->
-            new Genre(rs.getInt("genre_id"), rs.getString("genre_name"));
-
-    private final RowMapper<Mpa> mpaRowMapper = (rs, rowNum) ->
-            new Mpa(rs.getInt("rating_id"), rs.getString("rating_name"));
 
 }

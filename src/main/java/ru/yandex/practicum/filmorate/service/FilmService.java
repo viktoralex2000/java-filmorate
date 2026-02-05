@@ -6,43 +6,42 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmRequestDto;
 import ru.yandex.practicum.filmorate.dto.FilmResponseDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.time.LocalDate;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final FilmMapper filmMapper;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, UserService userService) {
+    public FilmService(FilmStorage filmStorage, UserService userService, FilmMapper filmMapper) {
         this.filmStorage = filmStorage;
         this.userService = userService;
+        this.filmMapper = filmMapper;
     }
 
     public FilmResponseDto createFilm(FilmRequestDto request) {
-        Film film = mapToFilm(request);
-        validateFilm(film);
-        filmStorage.addFilm(film);
-        return mapToResponseDto(film);
+        Film film = filmMapper.mapToFilm(request);
+        long filmId = filmStorage.addFilm(film);
+        return filmMapper.mapToResponseDto(getFilmById(filmId));
     }
 
     public FilmResponseDto updateFilm(FilmRequestDto request) {
-        Film film = mapToFilm(request);
-        Film existing = filmStorage.getFilm(film.getId());
+        Film film = filmMapper.mapToFilm(request);
+        long filmId = film.getId();
+        Film existing = filmStorage.getFilm(filmId);
         if (existing == null) {
-            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
+            throw new NotFoundException("Фильм с id=" + filmId + " не найден");
         }
-        validateFilm(film);
         filmStorage.updateFilm(film);
-        return mapToResponseDto(film);
+        return filmMapper.mapToResponseDto(getFilmById(filmId));
     }
 
     public void deleteFilm(long id) {
@@ -96,49 +95,5 @@ public class FilmService {
 
     public Mpa getMpaById(long id) {
         return filmStorage.getMpaById(id);
-    }
-
-    private Film mapToFilm(FilmRequestDto dto) {
-        Film film = new Film();
-        film.setId(dto.getId());
-        film.setName(dto.getName());
-        film.setDescription(dto.getDescription());
-        film.setReleaseDate(dto.getReleaseDate());
-        film.setDuration(dto.getDuration());
-        if (dto.getMpa() != null) {
-            Mpa mpa = getMpaById(dto.getMpa().getId());
-            film.setMpa(mpa);
-        }
-        Set<Genre> genres = new LinkedHashSet<>();
-        if (dto.getGenres() != null) {
-            for (Genre g : dto.getGenres()) {
-                genres.add(getGenreById(g.getId()));
-            }
-        }
-        film.setGenres(genres);
-        return film;
-    }
-
-
-    private FilmResponseDto mapToResponseDto(Film film) {
-        FilmResponseDto dto = new FilmResponseDto();
-        dto.setId(film.getId());
-        dto.setName(film.getName());
-        dto.setDescription(film.getDescription());
-        dto.setReleaseDate(film.getReleaseDate());
-        dto.setDuration(film.getDuration());
-        dto.setMpa(film.getMpa());
-        dto.setGenres(film.getGenres());
-        return dto;
-    }
-
-    private void validateFilm(Film film) {
-        if (film.getDuration() <= 0) {
-            throw new IllegalArgumentException("Продолжительность фильма должна быть положительным числом.");
-        }
-        if (film.getReleaseDate() != null && film.getReleaseDate()
-                .isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new IllegalArgumentException("Дата релиза не может быть раньше 28.12.1895.");
-        }
     }
 }

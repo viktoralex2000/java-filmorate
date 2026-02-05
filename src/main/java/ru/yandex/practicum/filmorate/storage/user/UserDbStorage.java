@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -18,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final RowMapper<User> userRowMapper = (rs, rowNum) -> mapRowToUser(rs);
+    private final UserRowMapper userRowMapper;
 
     @Override
     public void addUser(User user) {
@@ -78,7 +79,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User getUser(long id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
-        List<User> users = jdbcTemplate.query(sql, userRowMapper, id);
+        List<User> users = jdbcTemplate.query(sql, (rs, rowNum) -> userRowMapper.mapRowToUser(rs), id);
         if (users.isEmpty()) {
             throw new NotFoundException("Пользователь с id=" + id + " не найден");
         }
@@ -99,7 +100,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAllUsers() {
-        List<User> users = jdbcTemplate.query("SELECT * FROM users", userRowMapper);
+        List<User> users = jdbcTemplate.query("SELECT * FROM users", (rs, rowNum) -> userRowMapper.mapRowToUser(rs));
 
         String friendsSql = """
                 SELECT f.friend_id
@@ -178,7 +179,7 @@ public class UserDbStorage implements UserStorage {
                 JOIN friendships f ON u.user_id = f.friend_id
                 WHERE f.user_id = ?
                 """;
-        return jdbcTemplate.query(sql, userRowMapper, userId);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> userRowMapper.mapRowToUser(rs), userId);
     }
 
     @Override
@@ -197,22 +198,12 @@ public class UserDbStorage implements UserStorage {
                     WHERE f2.user_id = ?
                 )
                 """;
-        return jdbcTemplate.query(sql, userRowMapper, userId, otherId);
+        return jdbcTemplate.query(sql, (rs, rowNum) -> userRowMapper.mapRowToUser(rs), userId, otherId);
     }
 
     private void setDisplayNameIfEmpty(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-    }
-
-    private User mapRowToUser(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("user_id"));
-        user.setEmail(rs.getString("email"));
-        user.setLogin(rs.getString("login"));
-        user.setName(rs.getString("user_name"));
-        user.setBirthday(rs.getDate("birthday").toLocalDate());
-        return user;
     }
 }
