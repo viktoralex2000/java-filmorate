@@ -25,14 +25,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public long addFilm(Film film) {
-        if (film.getMpa() == null || getMpaById(film.getMpa().getId()) == null) {
-            throw new NotFoundException("MPA с id=" + (film.getMpa() != null ? film.getMpa().getId() : "null") + " не найден");
+        if (film.getMpa() != null) {
+            getMpaById(film.getMpa().getId());
         }
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
-                if (getGenreById(genre.getId()) == null) {
-                    throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
-                }
+                getGenreById(genre.getId());
             }
         }
         String sql = """
@@ -60,14 +58,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void updateFilm(Film film) {
-        if (film.getMpa() == null || getMpaById(film.getMpa().getId()) == null) {
-            throw new NotFoundException("MPA с id=" + (film.getMpa() != null ? film.getMpa().getId() : "null") + " не найден");
+        if (film.getMpa() != null) {
+            getMpaById(film.getMpa().getId());
         }
         if (film.getGenres() != null) {
             for (Genre genre : film.getGenres()) {
-                if (getGenreById(genre.getId()) == null) {
-                    throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
-                }
+                getGenreById(genre.getId());
             }
         }
         String sql = """
