@@ -50,6 +50,16 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void updateFilm(Film film) {
+        if (film.getMpa() == null || getMpaById(film.getMpa().getId()) == null) {
+            throw new NotFoundException("MPA с id=" + (film.getMpa() != null ? film.getMpa().getId() : "null") + " не найден");
+        }
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
+                if (getGenreById(genre.getId()) == null) {
+                    throw new NotFoundException("Жанр с id=" + genre.getId() + " не найден");
+                }
+            }
+        }
         String sql = """
                 UPDATE films
                 SET film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?
@@ -64,6 +74,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getMpa().getId(),
                 film.getId()
         );
+
         if (updated == 0) {
             throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
