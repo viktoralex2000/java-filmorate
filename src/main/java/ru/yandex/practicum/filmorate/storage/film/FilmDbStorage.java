@@ -61,11 +61,11 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getMpa() != null) {
             getMpaById(film.getMpa().getId());
         }
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                getGenreById(genre.getId());
-            }
+        //if (film.getGenres() != null) {
+        for (Genre genre : film.getGenres()) {
+            getGenreById(genre.getId());
         }
+        //}
         String sql = """
                 UPDATE films
                 SET film_name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?
