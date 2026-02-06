@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component("userDbStorage")
 @RequiredArgsConstructor
@@ -107,20 +108,7 @@ public class UserDbStorage implements UserStorage {
         List<Long> userIds = users.stream()
                 .map(User::getId)
                 .toList();
-        String friendsSql = """
-                SELECT user_id, friend_id
-                FROM friendships
-                WHERE user_id IN (%s)
-                """.formatted(userIds.stream()
-                .map(String::valueOf)
-                .collect(java.util.stream.Collectors.joining(",")));
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(friendsSql);
-        Map<Long, Set<Long>> friendsMap = new HashMap<>();
-        for (Map<String, Object> row : rows) {
-            long userId = ((Number) row.get("user_id")).longValue();
-            long friendId = ((Number) row.get("friend_id")).longValue();
-            friendsMap.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
-        }
+        Map<Long, Set<Long>> friendsMap = getFriendsByUserIds(userIds);
         for (User user : users) {
             user.getFriends().clear();
             user.getFriends().addAll(
@@ -218,9 +206,35 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update("DELETE FROM users");
     }
 
+    //Вспомогательные методы
+
     private void setDisplayNameIfEmpty(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
     }
+
+    private Map<Long, Set<Long>> getFriendsByUserIds(List<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+        String sql = """
+                SELECT user_id, friend_id
+                FROM friendships
+                WHERE user_id IN (%s)
+                """.formatted(
+                userIds.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.joining(","))
+        );
+        Map<Long, Set<Long>> result = new HashMap<>();
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
+        for (Map<String, Object> row : rows) {
+            long userId = ((Number) row.get("user_id")).longValue();
+            long friendId = ((Number) row.get("friend_id")).longValue();
+            result.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
+        }
+        return result;
+    }
+
 }

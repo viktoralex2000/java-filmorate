@@ -12,6 +12,6 @@ public class MpaRowMapper implements RowMapper<Mpa> {
 
     @Override
     public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
-        return new Mpa(rs.getInt("rating_id"), rs.getString("rating_name"));
+        return new Mpa(rs.getLong("rating_id"), rs.getString("rating_name"));
     }
 }
