@@ -83,7 +83,7 @@ class FilmDbStorageTest {
         assertThat(retrieved.getMpa().getId()).isEqualTo(1);
         assertThat(retrieved.getGenres())
                 .extracting(Genre::getId)
-                .containsExactly(1);
+                .containsExactly(1L);
     }
 
     @Test
@@ -104,7 +104,7 @@ class FilmDbStorageTest {
         assertThat(updated.getDuration()).isEqualTo(180);
         assertThat(updated.getGenres())
                 .extracting(Genre::getId)
-                .containsExactly(2);
+                .containsExactly(2L);
     }
 
     @Test
