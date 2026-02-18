@@ -2,36 +2,45 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.FilmRequestDto;
+import ru.yandex.practicum.filmorate.dto.FilmResponseDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private final FilmMapper filmMapper;
 
     @Autowired
-    FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(FilmStorage filmStorage, UserService userService, FilmMapper filmMapper) {
         this.filmStorage = filmStorage;
         this.userService = userService;
+        this.filmMapper = filmMapper;
     }
 
-    public Film createFilm(Film film) {
-        filmStorage.addFilm(film);
-        return film;
+    public FilmResponseDto createFilm(FilmRequestDto request) {
+        Film film = filmMapper.mapToFilm(request);
+        long filmId = filmStorage.addFilm(film);
+        return filmMapper.mapToResponseDto(getFilmById(filmId));
     }
 
-    public Film updateFilm(Film film) {
-        if (filmStorage.getFilm(film.getId()) == null) {
-            throw new NotFoundException("Фильм с id=" + film.getId() + " не найден");
+    public FilmResponseDto updateFilm(FilmRequestDto request) {
+        Film film = filmMapper.mapToFilm(request);
+        long filmId = film.getId();
+        Film existing = filmStorage.getFilm(filmId);
+        if (existing == null) {
+            throw new NotFoundException("Фильм с id=" + filmId + " не найден");
         }
         filmStorage.updateFilm(film);
-        return film;
+        return filmMapper.mapToResponseDto(getFilmById(filmId));
     }
 
     public void deleteFilm(long id) {
@@ -53,24 +62,37 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
-    // Лайки
-
     public void addLike(long filmId, long userId) {
-        Film film = getFilmById(filmId);
+        getFilmById(filmId);
         userService.getUserById(userId);
-        film.getLikes().add(userId);
+        filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(long filmId, long userId) {
-        Film film = getFilmById(filmId);
+        getFilmById(filmId);
         userService.getUserById(userId);
-        film.getLikes().remove(userId);
+        filmStorage.removeLike(filmId, userId);
     }
 
     public List<Film> getMostPopularFilms(int count) {
-        return filmStorage.getAllFilms().stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmStorage.getMostPopularFilms(count);
+    }
+
+    // Жанры и рейтинг MPA
+
+    public List<Genre> getAllGenres() {
+        return filmStorage.getAllGenres();
+    }
+
+    public Genre getGenreById(long id) {
+        return filmStorage.getGenreById(id);
+    }
+
+    public List<Mpa> getAllMpa() {
+        return filmStorage.getAllMpa();
+    }
+
+    public Mpa getMpaById(long id) {
+        return filmStorage.getMpaById(id);
     }
 }
